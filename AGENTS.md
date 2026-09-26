@@ -43,8 +43,11 @@ wins.
 | `SANDBOX_AUTH_CLIENT_SESSION_SECRET` | a long random string that signs the session cookie |
 | `SANDBOX_ADMINS` | optional: admins' Sandbox emails, comma-separated |
 | `DATABASE_URL` | the live database, added by `npm run online`. Never put it in `.env.local` |
+| `GITHUB_CLIENT_ID` | this app's GitHub OAuth app ID (a different app locally and live) |
+| `GITHUB_CLIENT_SECRET` | that OAuth app's client secret |
+| `GITHUB_ORG_INVITE_TOKEN` | a `sandbox-is` owner's fine-grained token, "Members: Read and write" |
 
-Until both are set, the app still builds and runs, and the login page shows a
+Until the two `SANDBOX_AUTH_` settings are set, the app still builds and runs, and the login page shows a
 setup guide instead of the sign-in button. If the person is stuck, point them
 to that page: it tells them what's missing and what to do.
 
@@ -154,6 +157,21 @@ linking again on https://members.sandbox.is/vibes.
 
 More in the [sandbox-auth troubleshooting guide](https://github.com/cesarsalazar/sandbox-auth/tree/v0.7.1#troubleshooting).
 
+### GitHub settings
+
+This app links each Sandbox member to one GitHub account and invites it to the
+`sandbox-is` org (`lib/github.ts`, `lib/links.ts`, `app/actions.ts`).
+
+- **GitHub's callback is `/api/github/callback`**, separate from Sandbox's.
+  GitHub OAuth apps allow one callback address, so there are two OAuth apps:
+  one with `http://localhost:3000/api/github/callback`, one with
+  `https://<live address>/api/github/callback`.
+- It asks GitHub for no scopes (public profile only), and cancels GitHub's
+  token as soon as it has read the profile. Never store it.
+- The same three settings rules apply: server only, never `NEXT_PUBLIC_`, and
+  the person puts the values in themselves.
+- Until all three are set, the home page lists what's missing.
+
 ## Storing data
 
 Use the database in `lib/db.ts` for anything the app needs to remember:
@@ -246,7 +264,9 @@ about sign-in.
 | `app/api/auth/callback/route.ts` | where Sandbox sends people back; sets the session cookie |
 | `app/api/auth/logout/route.ts` | signs out of this app |
 | `proxy.ts` | sends signed-out people to `/login`; edit `PUBLIC` to open pages to everyone |
-| `app/page.tsx` | the signed-in home page: the member's name and photo |
+| `app/page.tsx` | the home page: Connect GitHub, confirm, and invite status |
+| `app/admin/page.tsx` | admins: everyone who has linked a GitHub account |
+| `app/api/github/connect/route.ts`, `app/api/github/callback/route.ts` | GitHub sign-in (to learn which account is theirs) |
 
 To get the signed-in member in a server component, route handler or server action:
 

@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sandbox app",
-  description: "A Sandbox members app",
+  title: "Join Sandbox on GitHub",
+  description: "Sandbox members join the sandbox-is GitHub org",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
