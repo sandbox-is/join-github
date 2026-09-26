@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="340" viewBox="0 0 1280 340">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#15173A"/>
+      <stop offset="1" stop-color="#26164A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="340" rx="24" fill="url(#bg)"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <text x="72" y="132" font-size="54" font-weight="700" fill="#F4F4FF">Sandbox app starter</text>
+    <text x="72" y="182" font-size="24" fill="#B9BBE0">Build a members-only app by chatting with your AI agent.</text>
+    <g font-size="18" font-weight="600">
+      <rect x="72" y="222" width="212" height="40" rx="20" fill="#2A2D63"/>
+      <text x="178" y="248" text-anchor="middle" fill="#C9CBFF">Sign in with Sandbox</text>
+      <rect x="296" y="222" width="122" height="40" rx="20" fill="#2A2D63"/>
+      <text x="357" y="248" text-anchor="middle" fill="#C9CBFF">Database</text>
+      <rect x="430" y="222" width="110" height="40" rx="20" fill="#2A2D63"/>
+      <text x="485" y="248" text-anchor="middle" fill="#C9CBFF">Hosting</text>
+    </g>
+  </g>
+  <!-- a small app window: a member signed in, others in a row -->
+  <g transform="translate(900 62)">
+    <rect width="300" height="216" rx="16" fill="#20234D"/>
+    <circle cx="22" cy="22" r="6" fill="#393C74"/><circle cx="42" cy="22" r="6" fill="#393C74"/><circle cx="62" cy="22" r="6" fill="#393C74"/>
+    <circle cx="150" cy="84" r="30" fill="#8B8DFF"/>
+    <rect x="95" y="128" width="110" height="12" rx="6" fill="#393C74"/>
+    <circle cx="105" cy="176" r="12" fill="#8B8DFF" opacity=".55"/>
+    <circle cx="135" cy="176" r="12" fill="#8B8DFF" opacity=".75"/>
+    <circle cx="165" cy="176" r="12" fill="#8B8DFF" opacity=".55"/>
+    <circle cx="195" cy="176" r="12" fill="#8B8DFF" opacity=".75"/>
+  </g>
+</svg>
