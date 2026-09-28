@@ -54,6 +54,7 @@ export function JoinScreen({ member, view, error }: { member: Person; view: View
         {note && <p className="mt-4 text-sm text-muted">{note}</p>}
 
         {view.kind !== "setup" && <Journey step={step(view)} />}
+        {view.kind === "member" && <BringYourApp />}
       </div>
     </main>
   );
@@ -131,6 +132,45 @@ function Journey({ step }: { step: number }) {
         );
       })}
     </ol>
+  );
+}
+
+// For members with an app in their own GitHub account that the community could
+// share. Moving it is done on GitHub; this only explains how and what changes.
+function BringYourApp() {
+  return (
+    <section className="mt-12 border-t border-line pt-6 text-sm">
+      <h2 className="font-medium">Bring your app to {ORG}</h2>
+      <p className="mt-2 text-muted">
+        Have a repo other members could use or help with? Move it here so everyone can find it and suggest changes.
+      </p>
+      <ol className="mt-4 list-decimal space-y-1 pl-5">
+        <li>On GitHub, open your repo&apos;s Settings.</li>
+        <li>At the bottom, choose Transfer ownership, pick {ORG}, and confirm.</li>
+      </ol>
+      <details className="mt-4">
+        <summary className="cursor-pointer text-muted hover:text-foreground">What changes when you move it</summary>
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-muted">
+          <li>Your old link still works: it sends people to the new place, and so does git.</li>
+          <li>Issues, pull requests and stars come with it.</li>
+          <li>
+            You can still push and merge changes. Other members can suggest changes with pull requests, and you decide
+            what goes in.
+          </li>
+          <li>
+            You can&apos;t change the repo&apos;s settings any more, and {ORG} owners have full control of it. Ask an
+            owner for setting changes, or to move it back.
+          </li>
+          <li>Keep it public, so other members can see it.</li>
+          <li>
+            Reconnect tools linked to your account, like Vercel: they need access to {ORG} now, which an owner may have
+            to approve.
+          </li>
+          <li>A GitHub Pages site moves to {ORG}.github.io, and the old address stops working.</li>
+          <li>Don&apos;t make a new repo with the old name in your account: the old link would stop sending people here.</li>
+        </ul>
+      </details>
+    </section>
   );
 }
 

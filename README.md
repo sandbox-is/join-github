@@ -28,6 +28,31 @@ Each Sandbox member can link one GitHub account, and each GitHub account can
 belong to one member. Invites expire after 7 days; come back to the app for a
 new one.
 
+## Bring your app to sandbox-is
+
+Once you're in, you can move a repo from your own GitHub account into
+sandbox-is, so other members can find it and help with it. The "You're in"
+screen shows these steps too.
+
+1. On GitHub, open your repo's **Settings**.
+2. At the bottom, choose **Transfer ownership**, pick **sandbox-is**, and confirm.
+
+What changes:
+
+- **Your old link still works.** It sends people to the new place, and so does git.
+- **Issues, pull requests and stars come with it.**
+- **You can still push and merge.** Other members can suggest changes with
+  pull requests, and you decide what goes in.
+- **You can't change the repo's settings any more.** sandbox-is owners have
+  full control of it. Ask an owner for setting changes, or to move it back.
+- **Keep it public**, so other members can see it.
+- **Reconnect tools** linked to your account, like Vercel: they need access to
+  sandbox-is now, which an owner may have to approve.
+- **A GitHub Pages site moves** to sandbox-is.github.io, and the old address
+  stops working.
+- **Don't make a new repo with the old name** in your account: the old link
+  would stop sending people here.
+
 ## For admins
 
 Admins (listed in `SANDBOX_ADMINS`) see **Who's joined**: everyone who has
