@@ -268,6 +268,7 @@ about sign-in.
 | `app/join-screen.tsx` | what each step looks like and says |
 | `app/preview/page.tsx` | every step with made-up data (`/preview?view=confirm`); only under `npm run dev` |
 | `components/logo.tsx`, `app/icon.svg` | the Sandbox logo and tab icon |
+| `components/github-icon.tsx` | GitHub's logo |
 | `app/admin/page.tsx`, `app/admin/actions.ts` | admins: everyone who has linked a GitHub account, and Unlink |
 | `app/api/github/connect/route.ts`, `app/api/github/callback/route.ts` | GitHub sign-in (to learn which account is theirs) |
 
