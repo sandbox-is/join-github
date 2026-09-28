@@ -42,6 +42,26 @@ function setting(name: (typeof GITHUB_SETTINGS)[number]) {
 
 const API_HEADERS = { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
 
+// The address GitHub sends people back to. Online it's always the app's main
+// address, never whatever Host the request claims; on your computer, localhost.
+export function appOrigin(requestUrl: string) {
+  const production = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  return production ? `https://${production}` : new URL(requestUrl).origin;
+}
+
+// GitHub turned down the org owner's token: it expired, was revoked, or lost
+// its permission. Refreshing won't help; an admin needs to replace it.
+export class InviteTokenError extends Error {}
+
+// Why a call with the org token failed, without usernames or response bodies
+// (those are personal data and don't belong in logs).
+async function orgTokenFailure(res: Response, what: string) {
+  const rateLimited = res.headers.get("x-ratelimit-remaining") === "0";
+  const { message } = (await res.json().catch(() => ({}))) as { message?: string };
+  const detail = `${what} failed (HTTP ${res.status}${message ? `: ${message.slice(0, 120)}` : ""})`;
+  return (res.status === 401 || res.status === 403) && !rateLimited ? new InviteTokenError(detail) : new Error(detail);
+}
+
 // No scope: GitHub then only lets us read their public profile.
 export function authorizeUrl(state: string, redirectUri: string) {
   const url = new URL("https://github.com/login/oauth/authorize");
@@ -73,13 +93,20 @@ export async function exchangeCode(code: string, redirectUri: string) {
 
 export type GitHubUser = { id: number; login: string };
 
+// GitHub usernames: letters, digits and single hyphens, up to 39 characters.
+const LOGIN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/;
+
 export async function fetchUser(accessToken: string): Promise<GitHubUser> {
   const res = await fetch("https://api.github.com/user", {
     headers: { ...API_HEADERS, Authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok) throw new Error(`Reading the GitHub profile failed (HTTP ${res.status})`);
-  const { id, login } = (await res.json()) as GitHubUser;
-  return { id, login };
+  const { id, login } = (await res.json()) as Partial<GitHubUser>;
+  // Don't trust the shape blindly: a bad answer should fail here, not in the database.
+  if (!Number.isSafeInteger(id) || (id as number) <= 0 || typeof login !== "string" || !LOGIN.test(login)) {
+    throw new Error("GitHub's profile answer didn't have a valid id and username");
+  }
+  return { id: id as number, login };
 }
 
 // Once we've read their profile we don't need the token, so we ask GitHub to
@@ -106,7 +133,7 @@ export async function orgStatus(login: string): Promise<OrgStatus> {
     cache: "no-store",
   });
   if (res.status === 404) return "none";
-  if (!res.ok) throw new Error(`Checking ${login}'s ${ORG} membership failed (HTTP ${res.status})`);
+  if (!res.ok) throw await orgTokenFailure(res, `Checking ${ORG} membership`);
   const { state } = (await res.json()) as { state: "active" | "pending" };
   return state === "active" ? "member" : "invited";
 }
@@ -117,10 +144,7 @@ export async function inviteToOrg(githubId: number) {
     headers: { ...API_HEADERS, Authorization: `Bearer ${setting("GITHUB_ORG_INVITE_TOKEN")}` },
     body: JSON.stringify({ invitee_id: githubId, role: "direct_member" }),
   });
-  if (res.status !== 201) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`Inviting GitHub user ${githubId} to ${ORG} failed (HTTP ${res.status}): ${detail.slice(0, 300)}`);
-  }
+  if (res.status !== 201) throw await orgTokenFailure(res, `Inviting to ${ORG}`);
 }
 
 // Their username today. People can rename their GitHub account; the id stays.
@@ -129,6 +153,8 @@ export async function currentLogin(githubId: number) {
     headers: { ...API_HEADERS, Authorization: `Bearer ${setting("GITHUB_ORG_INVITE_TOKEN")}` },
     cache: "no-store",
   });
-  if (!res.ok) throw new Error(`Looking up GitHub user ${githubId} failed (HTTP ${res.status})`);
-  return ((await res.json()) as GitHubUser).login;
+  if (!res.ok) throw await orgTokenFailure(res, "Looking up a GitHub user by id");
+  const { login } = (await res.json()) as Partial<GitHubUser>;
+  if (typeof login !== "string" || !LOGIN.test(login)) throw new Error("GitHub's user answer didn't have a valid username");
+  return login;
 }

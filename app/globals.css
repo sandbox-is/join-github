@@ -1,25 +1,56 @@
 @import "tailwindcss";
 
+/* Sandbox blue, with an indigo ink taken from it rather than plain black. */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #16144a;
+  --muted: #5e5c84;
+  --line: #dad9f5;
+  --wash: #f3f3ff;
+  --brand: #211aff;
+  --brand-hover: #1510c9;
+  --on-brand: #ffffff;
+  --ok: #0f7a4a;
+  --danger: #b4232f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0d0c2e;
+    --foreground: #ededff;
+    --muted: #a6a5d6;
+    --line: #2d2b68;
+    --wash: #17164a;
+    --brand: #6f6bff;
+    --brand-hover: #8b88ff;
+    --on-brand: #0d0c2e;
+    --ok: #5fd39a;
+    --danger: #ff8a93;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-wash: var(--wash);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-on-brand: var(--on-brand);
+  --color-ok: var(--ok);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-serif: var(--font-newsreader);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }

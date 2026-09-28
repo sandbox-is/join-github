@@ -4,12 +4,14 @@ export function Avatar({ name, picture, size = 96 }: { name?: string | null; pic
   return picture ? (
     // A plain <img>: photo hosts vary, so next/image would need them configured.
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={picture} alt={name ?? ""} title={name ?? undefined} style={style} className="rounded-full object-cover" />
+    <img src={picture} alt={name ?? ""} title={name ?? undefined} style={style} className="shrink-0 rounded-full object-cover" />
   ) : (
     <div
+      role="img"
+      aria-label={name ?? "No photo"}
       title={name ?? undefined}
       style={style}
-      className="flex items-center justify-center rounded-full bg-neutral-200 font-semibold text-neutral-600"
+      className="flex shrink-0 items-center justify-center rounded-full bg-line font-semibold text-muted"
     >
       {name?.[0] ?? "?"}
     </div>

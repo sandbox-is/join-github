@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
+import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import "./globals.css";
+import { Logo } from "@/components/logo";
+import { isAdmin } from "@/lib/admin";
+import { getMember } from "@/lib/session";
 import { testSignIn } from "@/lib/setup";
 
 const geistSans = Geist({
@@ -13,16 +17,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Headings: a book serif, to sit with the Sandbox wordmark.
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Join Sandbox on GitHub",
   description: "Sandbox members join the sandbox-is GitHub org",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const member = await getMember();
+
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {testSignIn() && (
@@ -31,6 +43,23 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             once your app is approved and set up. Data here is saved on your computer only.
           </div>
         )}
+        <header className="flex items-center justify-between gap-4 px-6 py-5">
+          <Link href="/" className="text-brand" aria-label="Join Sandbox on GitHub, home">
+            <Logo height={22} />
+          </Link>
+          {member && (
+            <nav className="flex items-center gap-5 text-sm text-muted">
+              {isAdmin(member) && (
+                <Link href="/admin" className="hover:text-foreground">
+                  Who&apos;s joined
+                </Link>
+              )}
+              <form action="/api/auth/logout" method="post">
+                <button className="hover:text-foreground">Sign out</button>
+              </form>
+            </nav>
+          )}
+        </header>
         {children}
       </body>
     </html>

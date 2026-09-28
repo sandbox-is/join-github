@@ -2,8 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { sql } from "@/lib/db";
-import { canInvite, inviteToOrg } from "@/lib/github";
-import { linkFor, linkStatus } from "@/lib/links";
+import { canInvite, InviteTokenError, inviteToOrg } from "@/lib/github";
+import { linkFor, linkStatus, saveStatus } from "@/lib/links";
 import { getMember } from "@/lib/session";
 
 // How long a member has to confirm a GitHub account after signing in with it.
@@ -57,14 +57,29 @@ async function inviteIfNeeded(memberSub: string) {
   const link = await linkFor(memberSub);
   if (!link || !canInvite()) redirect("/");
 
+  // One attempt a minute per member: two clicks (or tabs) at once would
+  // otherwise both see "no invite" and both try to send one.
+  const claimed = await sql`
+    update github_links set invite_attempted_at = now()
+    where member_sub = ${memberSub}
+      and (invite_attempted_at is null or invite_attempted_at < now() - interval '1 minute')
+    returning 1`;
+  if (claimed.length === 0) redirect("/");
+
+  let error: string | undefined;
   try {
-    if ((await linkStatus(memberSub, link)) === "none") {
+    if ((await linkStatus(memberSub, link, true)) === "none") {
       await inviteToOrg(Number(link.github_id));
       await sql`update github_links set invited_at = now() where member_sub = ${memberSub}`;
+      await saveStatus(memberSub, "invited");
     }
-  } catch (error) {
-    console.error(`Inviting member ${memberSub} (GitHub ${link.github_login}) failed:`, error);
-    redirect("/?error=invite_failed");
+  } catch (failure) {
+    console.error("Sending a GitHub invite failed:", failure);
+    // It may have gone through anyway, so check before saying it didn't.
+    const status = await linkStatus(memberSub, link, true).catch(() => null);
+    if (status !== "invited" && status !== "member") {
+      error = failure instanceof InviteTokenError ? "invites_paused" : "invite_failed";
+    }
   }
-  redirect("/");
+  redirect(error ? `/?error=${error}` : "/");
 }

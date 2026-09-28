@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { sql } from "@/lib/db";
-import { CALLBACK_PATH, exchangeCode, fetchUser, revokeToken, STATE_COOKIE, type GitHubUser } from "@/lib/github";
+import { appOrigin, CALLBACK_PATH, exchangeCode, fetchUser, revokeToken, STATE_COOKIE, type GitHubUser } from "@/lib/github";
 import { getMember } from "@/lib/session";
 
 // GitHub sends people back here after they sign in. This is GitHub's callback,
@@ -10,33 +10,39 @@ import { getMember } from "@/lib/session";
 // We read their GitHub id and username, cancel GitHub's token straight away,
 // and save the account as "waiting for them to confirm".
 export async function GET(request: NextRequest) {
+  const origin = appOrigin(request.url);
   const member = await getMember();
-  if (!member) return NextResponse.redirect(new URL("/login", request.url));
+  if (!member) return NextResponse.redirect(new URL("/login", origin));
 
   const home = (error?: string) => {
-    const url = new URL("/", request.url);
+    const url = new URL("/", origin);
     if (error) url.searchParams.set("error", error);
     const res = NextResponse.redirect(url);
     res.cookies.delete({ name: STATE_COOKIE, path: CALLBACK_PATH });
     return res;
   };
 
+  // Only answers to a sign-in this browser started count, cancellations included.
   const params = request.nextUrl.searchParams;
+  const state = params.get("state");
+  if (!state || state !== request.cookies.get(STATE_COOKIE)?.value) {
+    // Not ours: leave any sign-in that is in progress alone.
+    return NextResponse.redirect(new URL("/?error=github_failed", origin));
+  }
   if (params.get("error") === "access_denied") return home("github_denied");
   const code = params.get("code");
-  const state = params.get("state");
-  if (!code || !state || state !== request.cookies.get(STATE_COOKIE)?.value) return home("github_failed");
+  if (!code) return home("github_failed");
 
   let user: GitHubUser;
   try {
-    const token = await exchangeCode(code, new URL(CALLBACK_PATH, request.url).toString());
+    const token = await exchangeCode(code, new URL(CALLBACK_PATH, origin).toString());
     try {
       user = await fetchUser(token);
     } finally {
       await revokeToken(token);
     }
   } catch (error) {
-    console.error(`GitHub sign-in failed for member ${member.sub}:`, error);
+    console.error("GitHub sign-in failed:", error);
     return home("github_failed");
   }
 

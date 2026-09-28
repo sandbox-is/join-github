@@ -264,8 +264,11 @@ about sign-in.
 | `app/api/auth/callback/route.ts` | where Sandbox sends people back; sets the session cookie |
 | `app/api/auth/logout/route.ts` | signs out of this app |
 | `proxy.ts` | sends signed-out people to `/login`; edit `PUBLIC` to open pages to everyone |
-| `app/page.tsx` | the home page: Connect GitHub, confirm, and invite status |
-| `app/admin/page.tsx` | admins: everyone who has linked a GitHub account |
+| `app/page.tsx` | the home page: works out which step the member is on |
+| `app/join-screen.tsx` | what each step looks like and says |
+| `app/preview/page.tsx` | every step with made-up data (`/preview?view=confirm`); only under `npm run dev` |
+| `components/logo.tsx`, `app/icon.svg` | the Sandbox logo and tab icon |
+| `app/admin/page.tsx`, `app/admin/actions.ts` | admins: everyone who has linked a GitHub account, and Unlink |
 | `app/api/github/connect/route.ts`, `app/api/github/callback/route.ts` | GitHub sign-in (to learn which account is theirs) |
 
 To get the signed-in member in a server component, route handler or server action:
